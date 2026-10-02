@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SMART-EVP Corridor control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f7f8fa;--card:#fff;--tx:#18202b;--mu:#667180;--bd:#e4e8ed;--ac:#1f5eff;--onac:#fff;--r:#e5342b;--g:#1fa45b;--a:#f2a900;--hd:'Barlow Condensed','Arial Narrow',system-ui,sans-serif}
+:root[data-theme=dark]{--bg:#000;--card:#000;--tx:#e6ebf1;--mu:#8b98a8;--bd:#262d36;--ac:#6b9bff;--onac:#000}
+*{box-sizing:border-box}[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.55 Barlow,system-ui,sans-serif}
+.nav{position:fixed;inset:0 auto 0 0;width:216px;border-right:1px solid var(--bd);display:flex;flex-direction:column;padding:28px 16px}
+.brand{display:flex;gap:12px;align-items:center;padding:0 10px 32px}
+.mark{width:18px;height:34px;border-radius:5px;border:1.5px solid var(--tx);display:flex;flex-direction:column;justify-content:space-around;align-items:center;padding:3px 0}
+.mark i{width:6px;height:6px;border-radius:50%;background:var(--bd)}.mark i:last-child{background:var(--g)}
+.brand b{display:block;font:600 20px/1 var(--hd);letter-spacing:.03em}.brand span{font-size:12px;color:var(--mu)}
+.links{display:flex;flex-direction:column;gap:2px}
+.nav a{display:block;padding:8px 10px;border-radius:8px;color:var(--mu);text-decoration:none;font-weight:500}
+.nav a:hover{color:var(--tx)}.nav a[aria-current]{color:var(--tx);background:var(--card);box-shadow:inset 0 0 0 1px var(--bd)}
+.foot{margin-top:auto;display:flex;flex-direction:column;gap:10px;padding:0 10px;font-size:13px;color:var(--mu)}
+main{margin-left:216px;padding:36px 48px 64px;max-width:1320px}
+.top{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:flex-end;margin-bottom:32px}
+h1{font:600 32px/1.05 var(--hd);margin:0;letter-spacing:.01em}.sub{color:var(--mu);font-size:14px;margin:6px 0 0;max-width:62ch}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+label{display:flex;align-items:center;gap:8px;font-weight:500;color:var(--mu)}
+button,select,.btn{font:500 14px Barlow,system-ui,sans-serif;padding:7px 14px;border:1px solid var(--bd);border-radius:8px;background:transparent;color:var(--tx);cursor:pointer}
+select{background:var(--card)}
+.btn.pri,#play{background:var(--tx);border-color:var(--tx);color:var(--bg)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+input[type=range]{accent-color:var(--tx)}
+input[type=number]{font:inherit;padding:7px 10px;width:90px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx)}
+code{font:13px ui-monospace,Menlo,Consolas,monospace;background:var(--bd);padding:1px 6px;border-radius:5px}
+body:not(.loaded) .needs{display:none}.loaded .fg{display:none}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:22px 24px;margin-bottom:24px}
+.card h2,.gate h2{font:600 20px/1.2 var(--hd);margin:0;letter-spacing:.01em}.mu{color:var(--mu)}
+.gate{padding:32px 0;color:var(--mu)}.gate p{margin:6px 0 0;max-width:56ch}.gate h2{color:var(--tx)}
+.gate.alt{display:none}[hidden]+.gate.alt{display:block}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:20px 28px;margin:20px 0 36px}
+.kpis>div{border-top:1px solid var(--bd);padding-top:12px}
+.card .kpis{margin-bottom:8px}
+#meta>div:first-child{grid-column:span 2;border-top-color:var(--tx)}#meta>div:first-child .v{font-size:56px}
+.k{color:var(--mu);font-size:13px}.v{font:600 30px/1.15 var(--hd);font-variant-numeric:tabular-nums}
+.go3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:20px}
+.go{display:block;color:inherit;text-decoration:none;margin:0}.go:hover{border-color:var(--tx)}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px 18px}
+#sl{flex:1;min-width:200px}#tm{font:600 18px var(--hd);min-width:92px;text-align:right;font-variant-numeric:tabular-nums}
+.stage{background:#1d2125;border-radius:12px;overflow:hidden;margin-bottom:24px}
+canvas{width:100%;height:auto;display:block}
+.jns{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;margin-bottom:24px}
+.jc{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px 18px}
+.jc.on{border-color:var(--r)}
+.jh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.jh b{font:600 18px var(--hd)}
+.badge{padding:1px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--r);color:#fff}
+.lamp{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px}.lamp.g{background:var(--g)}.lamp.y{background:var(--a)}.lamp.r{background:var(--r)}
+.qb{display:block;height:4px;border-radius:2px;background:var(--bd);margin:5px 0 10px;overflow:hidden}.qb i{display:block;height:100%;background:var(--tx)}
+.two{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;align-items:start;margin-bottom:24px}.two .card{margin:0}
+.ev{max-height:280px;overflow:auto;font-size:14px;margin-top:12px}
+.ev div{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--bd)}
+.ev .mu{min-width:54px;font-variant-numeric:tabular-nums}.dot{width:7px;height:7px;border-radius:50%;flex:none;align-self:center}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;margin-top:12px;font-variant-numeric:tabular-nums}
+th{font-weight:500;color:var(--mu);font-size:13px}th,td{padding:10px 12px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left;padding-left:0}tr:last-child td{border-bottom:0}
+.ops{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;margin-top:18px}.ops label{flex-direction:column;align-items:flex-start;gap:6px;font-size:13px}
+#opo{background:#18202b;color:#cfe0f5;padding:16px;border-radius:10px;font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;margin:20px 0 0;overflow:auto}
+@media(max-width:900px){.nav{position:static;width:auto;border:0;border-bottom:1px solid var(--bd);flex-direction:row;flex-wrap:wrap;align-items:center;padding:12px 14px;gap:8px}
+.brand{padding:0 12px 0 0}.links{flex-direction:row;overflow-x:auto}.nav a{white-space:nowrap}.foot{margin:0 0 0 auto;flex-direction:row;align-items:center}
+main{margin:0;padding:22px 16px 40px}.two{grid-template-columns:1fr}#meta>div:first-child{grid-column:auto}h1{font-size:28px}}
+.hd{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.gd{color:var(--g)}.bad{color:var(--r)}
+@media print{:root,:root[data-theme=dark]{--bg:#fff;--card:#fff;--tx:#18202b;--mu:#667180;--bd:#d8dde3}.nav,.tools,.go3,.bar,#csv{display:none!important}main{margin:0;padding:0}.card,.jc{break-inside:avoid}}
+</style></head><body>
+<nav class="nav" aria-label="Main">
+ <div class="brand"><div class="mark" aria-hidden="true"><i></i><i></i><i></i></div><div><b>SMART-EVP</b><span>Corridor control</span></div></div>
+ <div class="links">
+  <a href="#overview" data-p="overview">Overview</a>
+  <a href="#live" data-p="live">Live corridor</a>
+  <a href="#analysis" data-p="analysis">Analysis</a>
+  <a href="#operator" data-p="operator">Operator console</a>
+  <a href="#security" data-p="security">Security log</a>
+ </div>
+ <div class="foot"><span id="st">No feeds loaded</span><button id="th" type="button">Dark mode</button></div>
+</nav>
+<main>
+<header class="top">
+ <div><h1 id="ptitle"></h1><p class="sub" id="psub"></p></div>
+ <div class="tools"><label class="needs">Scenario <select id="sc"></select></label>
+  <button id="pr" type="button">Print page</button><label class="btn pri">Load feeds<input id="files" type="file" accept=".json" multiple hidden></label></div>
+</header>
+
+<section class="page" id="p-overview">
+ <div class="gate fg"><h2>Load a simulation run</h2><p>Run <code>run_all</code> in MATLAB, then choose the <code>feed_*.json</code> files it exports. Add <code>security_events.json</code> and the Monte Carlo results file to fill the other pages.</p></div>
+ <div class="needs">
+  <p class="sub">Results for <b id="curn"></b></p>
+  <div class="kpis" id="meta"></div>
+  <div class="card tw"><h2>Against fixed-time signals</h2><p class="sub">Change per metric in this single run. Lower is better for every column, so a minus sign is a gain and a plus sign is a cost. The Analysis page covers many runs.</p><table id="vs"></table></div>
+  <div class="go3">
+   <a class="card go" href="#live"><h2>Watch the corridor</h2><p class="sub">Replay the run with signals, queues and the ambulance route.</p></a>
+   <a class="card go" href="#analysis"><h2>Compare scenarios</h2><p class="sub">Delays, stops and queues side by side, plus Monte Carlo results.</p></a>
+   <a class="card go" href="#operator"><h2>Send an override</h2><p class="sub">Build a manual junction command to try in MATLAB.</p></a>
+  </div>
+ </div>
+</section>
+
+<section class="page" id="p-live" hidden>
+ <div class="gate fg"><h2>No run loaded</h2><p>Load feed files to replay a scenario.</p></div>
+ <div class="needs">
+  <div class="card bar"><button id="play" type="button">Play</button><button id="nt" type="button">Night</button>
+   <label>Speed <select id="sp"><option value="1">x1 (real time)</option><option value="2" selected>x2</option><option value="5">x5</option></select></label>
+   <input id="sl" type="range" min="0" step="0.5" value="0" aria-label="Playback position"><span id="tm">t = 0.0 s</span></div>
+  <div class="stage"><canvas id="cv" aria-label="Corridor animation"></canvas></div>
+  <div class="jns" id="jn"></div>
+  <div class="two">
+   <div class="card"><h2>Ambulance speed</h2><p class="sub">Every loaded scenario, with the playhead on the selected one.</p><canvas id="ch" aria-label="Ambulance speed over time" style="margin-top:10px"></canvas></div>
+   <div class="card"><h2>Event log</h2><p class="sub">Derived from the feed. Space plays or pauses, arrow keys jump 5 s.</p><div class="ev" id="evl"></div></div>
+  </div>
+ </div>
+</section>
+
+<section class="page" id="p-analysis" hidden>
+ <div class="card" id="resCard" hidden><h2>Monte Carlo results</h2><p class="sub" id="resN"></p><canvas id="rc" style="margin-top:12px"></canvas></div>
+ <div class="gate alt"><h2>No Monte Carlo results loaded</h2><p>Include the results file from <code>run_all</code> to see mean values with 95% confidence intervals.</p></div>
+ <div class="gate fg"><h2>No scenarios loaded</h2><p>Load feed files to compare scenarios.</p></div>
+ <div class="card needs tw"><div class="hd"><div><h2>Scenario comparison</h2><p class="sub">One row per loaded feed.</p></div><button id="csv" type="button">Download CSV</button></div><table id="cmp"></table></div>
+</section>
+
+<section class="page" id="p-operator" hidden>
+ <div class="card"><h2>Override commands</h2><p class="sub">This page plays back saved runs, so it writes the MATLAB code that applies your commands.</p>
+  <div class="ops"><label>Junction <select id="opj"><option>1</option><option>2</option><option>3</option></select></label>
+   <label>Command <select id="opc"><option value="cancel">Cancel preemption</option><option value="force_A">Force green: road A</option><option value="force_B">Force green: road B</option><option value="release">Release override</option></select></label>
+   <label>At t = (s) <input id="opt" type="number" value="30" min="0"></label>
+   <button id="opa" type="button" class="btn pri">Add command</button><button id="opx" type="button">Clear</button><button id="opcp" type="button">Copy code</button></div>
+  <pre id="opo"></pre></div>
+</section>
+
+<section class="page" id="p-security" hidden>
+ <div class="card" id="sec" hidden></div>
+ <div class="gate alt"><h2>No security log loaded</h2><p>Load <code>security_events.json</code> to see the attack type, the target junction and how many messages were rejected.</p></div>
+</section>
+</main>
+<script>
+const AJ=1,BSTOP=300,RWM=15,POS=[300,700,1100],END=1300,DT=0.5,S=3,CY=165,RW=12,CW=900,CH=380,GAP=7.5*S,CARL=15,MAPY=326;
+const NAMES=['','A green','A yellow','All-red','B green','B yellow','All-red','EV green (A)'];
+const PAL=['#c9ced6','#e0c36a','#6a9bd1','#b56a6a','#7ab58a','#8a7ab5','#d98c4a'];
+let RES=null,ops=[],feeds={},sec=null,cur=null,tsim=0,playing=false,last=0,Q=null,lastI=-99,night=false,AL=[],BL=[[],[],[]],shownN=-1,dtr=.016;
+const $=id=>document.getElementById(id),cv=$('cv'),ctx=cv.getContext('2d');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const aC=s=>s===1||s===7?'g':s===2?'y':'r',bC=s=>s===4?'g':s===5?'y':'r';
+const ch=$('ch'),cx=ch.getContext('2d');
+(function(){const r=devicePixelRatio||1;cv.width=CW*r;cv.height=CH*r;ctx.setTransform(r,0,0,r,0,0);ch.width=CW*r;ch.height=160*r;cx.setTransform(r,0,0,r,0,0)})();
+
+$('files').onchange=async e=>{
+  for(const f of e.target.files){try{const d=JSON.parse(await f.text());
+    if(d.frames&&d.meta){d.ev=buildEvents(d);feeds[f.name.replace(/\.json$/,'')]=d;}else if(d.attackType)sec=d;else if(d.scenarios&&d.metrics){RES=d;drawResults();}}catch(err){alert('Could not read '+f.name)}}
+  const names=Object.keys(feeds);if(!names.length)return;
+  $('sc').innerHTML=names.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');
+  document.body.classList.add('loaded');$('st').textContent=names.length+(names.length>1?' feeds':' feed')+' loaded';pick(names[0]);table();vsBox();secBox();
+};
+function pick(n){cur=n;tsim=0;playing=false;Q=null;lastI=-99;AL=[];BL=[[],[],[]];shownN=-1;$('play').textContent='Play';
+  $('sl').max=(feeds[n].frames.length-1)*DT;$('sl').value=0;metaBox();}
+$('sc').onchange=e=>pick(e.target.value);
+$('sl').oninput=e=>{tsim=+e.target.value};
+$('play').onclick=()=>{const T=(feeds[cur].frames.length-1)*DT;if(tsim>=T)tsim=0;playing=!playing;$('play').textContent=playing?'Pause':'Play'};
+
+// ---- queue cars: index 0 is nearest the stop line; p = px behind the stop line ----
+const mk=p=>({p,col:PAL[Math.floor(Math.random()*PAL.length)]});
+function sync(i,seek){
+  const J=feeds[cur].frames[i].junctions;if(seek){AL=[];BL=[[],[],[]];}
+  if(!Q)Q=POS.map(()=>({A:[],B:[],dA:[],dB:[]}));
+  POS.forEach((_,j)=>{for(const k of ['A','B']){const n=J['q'+k][j],arr=Q[j][k],dep=Q[j]['d'+k];
+    if(seek){arr.length=0;dep.length=0;for(let c=0;c<n;c++)arr.push(mk(6+c*GAP));}
+    else{while(arr.length<n)arr.push(mk(6+arr.length*GAP+110));
+         while(arr.length>n){const c=arr.shift();dep.push({p:c.p,v:0,col:c.col});}}}});
+  $('jn').innerHTML=POS.map((p,j)=>{const L=[,'g','y','r','g','y','r','g'][J.state[j]];return `<div class="jc${J.engaged[j]?' on':''}"><div class="jh"><b>Junction ${j+1}</b>${J.engaged[j]?'<span class="badge">EV priority</span>':''}</div><div class="k">Phase</div><div><i class="lamp ${L}"></i>${NAMES[J.state[j]]}</div><div class="k" style="margin-top:10px">Road A queue: ${J.qA[j]} veh</div><span class="qb"><i style="width:${Math.min(100,J.qA[j]*8)}%"></i></span><div class="k">Road B queue: ${J.qB[j]} veh</div><span class="qb"><i style="width:${Math.min(100,J.qB[j]*8)}%"></i></span></div>`}).join('');
+}
+function step(dt){const k=1-Math.exp(-dt*6);
+  Q.forEach(q=>{for(const a of ['A','B']){q[a].forEach((c,idx)=>{c.p+=(6+idx*GAP-c.p)*k});
+    const d=q['d'+a];d.forEach(c=>{c.v=Math.min(c.v+90*dt,75);c.p-=c.v*dt});q['d'+a]=d.filter(c=>c.p>-800);}});}
+
+$('nt').onclick=()=>{night=!night;$('nt').textContent=night?'Day':'Night'};
+addEventListener('keydown',e=>{if(!cur||location.hash!=='#live'||['SELECT','INPUT','BUTTON'].includes(e.target.tagName))return;const T=(feeds[cur].frames.length-1)*DT;
+  if(e.code==='Space'){e.preventDefault();$('play').click()}if(e.code==='ArrowRight')tsim=Math.min(tsim+5,T);if(e.code==='ArrowLeft')tsim=Math.max(0,tsim-5);});
+const H=n=>{n=Math.imul(n^(n>>>15),2246822519);n=Math.imul(n^(n>>>13),3266489917);return((n^(n>>>16))>>>0)/4294967296};
+const ROOF=['#a9a29a','#b88a7a','#8f9db0','#c4b48a','#9aa98f','#b0a0b8'];
+function tree(x,y,r){ctx.fillStyle='rgba(0,0,0,.22)';ctx.beginPath();ctx.arc(x+3,y+3,r,0,7);ctx.fill();ctx.fillStyle='#2f6a3a';ctx.beginPath();ctx.arc(x,y,r,0,7);ctx.fill();ctx.fillStyle='#3f8a4a';ctx.beginPath();ctx.arc(x-1.5,y-1.5,r*.6,0,7);ctx.fill();}
+function bld(x,y,w,h,n){ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(x+5,y+5,w,h);ctx.fillStyle=ROOF[Math.abs(n)%6];ctx.fillRect(x,y,w,h);ctx.fillStyle='rgba(255,255,255,.14)';ctx.fillRect(x+4,y+4,w-8,h-8);ctx.fillStyle='rgba(0,0,0,.25)';ctx.fillRect(x+10,y+10,16,12);ctx.fillRect(x+w-26,y+h-22,16,12);}
+function scenery(cam){
+  ctx.fillStyle='#8d9298';ctx.fillRect(0,CY-RW-5,CW,5);ctx.fillRect(0,CY+RW,CW,5);
+  const c0=Math.floor(cam/S/50)-1,c1=c0+Math.ceil(CW/S/50)+3,yN=CY-RW-11,yS=CY+RW+58;
+  for(let n=c0;n<=c1;n++){const bx=(50*n+9)*S-cam,hn=H(n+7),hs=H(n+123),h1=26+H(n)*46;
+    if(50*n<1250){if(hn<.75)bld(bx,yN-h1,32*S,h1,n);else{tree(bx+20,yN-18,9);tree(bx+60,yN-40,11);tree(bx+80,yN-12,8);}}
+    if(hs<.75)bld(bx,yS,32*S,26+H(n+55)*38,n+3);else{tree(bx+25,yS+25,10);tree(bx+70,yS+50,9);}}}
+// ambient cars: every list is leader-first, cars move toward DEcreasing coordinate (px)
+function lane(list,dt,stops){list.forEach((c,i)=>{let vt=36;
+  stops.forEach(st=>{if(!st.g){const d=c.pos-st.s;if(d>-2&&d<220)vt=Math.min(vt,Math.sqrt(40*Math.max(d-2,0)))}});
+  if(i>0)vt=Math.min(vt,Math.sqrt(40*Math.max(c.pos-list[i-1].pos-CARL-5,0)));
+  c.v+=Math.max(-40*dt,Math.min(15*dt,vt-c.v));c.pos-=c.v*dt;});}
+function buildEvents(d){const ev=[],lb={g:'on green',y:'on yellow',r:'on red'};let pe=[0,0,0],pp=[false,false,false],stp=false,fin=false,w2=false,c2=false,pd=0;
+  d.frames.forEach(fr=>{const t=fr.time,J=fr.junctions,a=fr.ambulance;
+    J.engaged.forEach((e,j)=>{if(e&&!pe[j])ev.push([t,'Junction '+(j+1)+' preempted: clearing the path for the ambulance','r']);
+      if(!e&&pe[j])ev.push([t,'Junction '+(j+1)+' released: recovery phase for cross traffic','y']);pe[j]=e;});
+    POS.forEach((p,j)=>{if(!pp[j]&&a.x>=p){pp[j]=true;ev.push([t,'Ambulance crossed Junction '+(j+1)+' '+lb[aC(J.state[j])],'g']);}});
+    const st=a.v<.5&&a.x>5&&a.x<END;if(st&&!stp)ev.push([t,'Ambulance stopped at '+Math.round(a.x)+' m (red light or queue)','r']);
+    if(!st&&stp)ev.push([t,'Ambulance moving again','g']);stp=st;
+    const b=fr.ambulance2;
+    if(b&&b.active){const s2=b.v<.5&&b.x>5&&b.x<BSTOP+RWM;
+      if(s2&&!w2)ev.push([t,'Empty ambulance waiting '+Math.round(BSTOP-b.x)+' m before J'+(AJ+1)+': patient has priority','y']);
+      if(!s2&&w2)ev.push([t,'Empty ambulance moving again','g']);w2=s2;
+      if(!c2&&b.x>=BSTOP){c2=true;ev.push([t,'Empty ambulance crossed Junction '+(AJ+1)+' '+lb[bC(J.state[AJ])],'g']);}}
+    if(b){const pj=J.pdir?J.pdir[AJ]:0;if(pj!==pd){if(pj===2)ev.push([t,'Junction '+(AJ+1)+' serves the empty ambulance (road B)','y']);
+      else if(pd===2&&pj===1)ev.push([t,'Junction '+(AJ+1)+' switches to the patient (road A)','r']);pd=pj;}}
+    if(!fin&&a.x>=END){fin=true;ev.push([t,'Ambulance reached the hospital','g']);}});
+  [].concat((d.meta&&d.meta.operator)||[]).forEach(o=>ev.push([o.t,'OPERATOR command at J'+o.junction+': '+o.cmd,'y']));ev.sort((p,q)=>p[0]-q[0]);
+  return ev;}
+function renderLog(){const ev=feeds[cur].ev,n=ev.filter(e=>e[0]<=tsim).length;if(n===shownN)return;shownN=n;const cl={r:'#d83a3a',y:'#e6a700',g:'#2fae5a'};
+  $('evl').innerHTML=ev.slice(0,n).reverse().map(e=>`<div><span class="dot" style="background:${cl[e[2]]}"></span><span class="mu">${e[0].toFixed(1)} s</span> ${esc(e[1])}</div>`).join('')||'<div class="mu">No events yet</div>';}
+function drawChart(){const w=CW,h=160,L=40,R=10,T=18,B=26,vm=20,cs=getComputedStyle(document.body),mu=cs.getPropertyValue('--mu'),bd=cs.getPropertyValue('--bd');
+  const tmax=Math.max(...Object.values(feeds).map(d=>d.frames.length-1))*DT,X=t=>L+(w-L-R)*t/tmax,Y=v=>T+(h-T-B)*(1-v/vm);
+  cx.clearRect(0,0,w,h);cx.font='11px system-ui';cx.lineWidth=1;
+  for(let v=0;v<=vm;v+=5){cx.strokeStyle=bd;cx.beginPath();cx.moveTo(L,Y(v));cx.lineTo(w-R,Y(v));cx.stroke();cx.fillStyle=mu;cx.textAlign='right';cx.fillText(v,L-5,Y(v)+4);}
+  cx.textAlign='center';cx.fillStyle=mu;for(let t=0;t<=tmax;t+=20)cx.fillText(t,X(t),h-10);cx.textAlign='left';cx.fillText('Ambulance speed (m/s) vs time (s)',L,12);
+  let lx=w-R;Object.entries(feeds).reverse().forEach(([n,d])=>{const c=n.includes('fixed')?'#e0653a':n.includes('local')?'#e0a83a':n.includes('corr')?'#2fae5a':n.includes('adapt')?'#9b6bff':'#6ea0ff';
+    cx.strokeStyle=c;cx.lineWidth=n===cur?2.6:1.4;cx.globalAlpha=n===cur?1:.6;cx.beginPath();d.frames.forEach((f,i)=>{const x=X(i*DT),y=Y(f.ambulance.v);i?cx.lineTo(x,y):cx.moveTo(x,y)});cx.stroke();
+    cx.globalAlpha=1;cx.fillStyle=c;cx.textAlign='right';cx.fillText(n,lx,12);lx-=cx.measureText(n).width+22;});
+  if(feeds[cur].meta.twoAmb){cx.setLineDash([5,4]);cx.strokeStyle='#6ea0ff';cx.lineWidth=2;cx.beginPath();let on=false;
+    feeds[cur].frames.forEach((f,i)=>{const e=f.ambulance2;if(!e||!e.active){on=false;return}const x=X(i*DT),y=Y(e.v);on?cx.lineTo(x,y):cx.moveTo(x,y);on=true});
+    cx.stroke();cx.setLineDash([]);cx.fillStyle='#6ea0ff';cx.textAlign='left';cx.fillText('dashed = empty ambulance',L+250,12);}
+  cx.strokeStyle=mu;cx.lineWidth=1;cx.beginPath();cx.moveTo(X(tsim),T);cx.lineTo(X(tsim),h-B);cx.stroke();}
+
+function drawAmb(ax,ay,fl,rot){ctx.save();ctx.translate(ax,ay);ctx.rotate(rot);ctx.globalCompositeOperation='lighter';
+  const g=ctx.createRadialGradient(0,0,2,0,0,75);g.addColorStop(0,fl?'rgba(255,40,40,.5)':'rgba(40,110,255,.5)');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(-75,-75,150,150);
+  if(night){const g2=ctx.createLinearGradient(12,0,160,0);g2.addColorStop(0,'rgba(255,240,200,.55)');g2.addColorStop(1,'rgba(255,240,200,0)');ctx.fillStyle=g2;ctx.beginPath();ctx.moveTo(12,-3);ctx.lineTo(160,-28);ctx.lineTo(160,28);ctx.lineTo(12,3);ctx.fill();}
+  ctx.globalCompositeOperation='source-over';ctx.fillStyle='#fff';ctx.beginPath();ctx.roundRect(-12,-5.5,24,11,2);ctx.fill();
+  ctx.fillStyle='#d83a3a';ctx.fillRect(-12,-1,24,2);ctx.fillRect(-1.5,-4,3,8);
+  ctx.fillStyle=fl?'#ff2a2a':'#2a6bff';ctx.fillRect(-3,-6.5,3,13);ctx.fillStyle=fl?'#2a6bff':'#ff2a2a';ctx.fillRect(0,-6.5,3,13);ctx.restore();}
+function tag(x,y,txt,c){ctx.font='bold 9px system-ui';const w=ctx.measureText(txt).width+10;ctx.fillStyle=c;ctx.beginPath();ctx.roundRect(x-w/2,y-7,w,14,7);ctx.fill();
+  ctx.fillStyle='#fff';ctx.textAlign='center';ctx.fillText(txt,x,y+3);ctx.textAlign='left';}
+// ---- drawing ----
+function car(x,y,w,h,col){ctx.fillStyle=col;ctx.beginPath();ctx.roundRect(x,y,w,h,2);ctx.fill();ctx.fillStyle='rgba(0,0,0,.35)';
+  if(w>h)ctx.fillRect(x+w*.62,y+1,w*.18,h-2);else ctx.fillRect(x+1,y+h*.2,w-2,h*.18);}
+function head(x,y,st,label){ctx.fillStyle='#16181b';ctx.fillRect(x-6,y,12,32);
+  [['r','#ff3b30'],['y','#ffcc00'],['g','#2fd05a']].forEach(([k,c],n)=>{const on=st===k;ctx.beginPath();ctx.arc(x,y+7+n*9,3.6,0,7);
+    ctx.fillStyle=on?c:'#3a3f45';ctx.shadowColor=c;ctx.shadowBlur=on?10:0;ctx.fill();ctx.shadowBlur=0;});
+  ctx.fillStyle='#fff';ctx.font='10px system-ui';ctx.textAlign='center';ctx.fillText(label,x,y+44);}
+function draw(now){
+  const F=feeds[cur].frames,T=F.length-1,i=Math.min(T,Math.floor(tsim/DT)),i2=Math.min(T,i+1),f=Math.min(1,(tsim-i*DT)/DT);
+  const A=F[i].ambulance,B=F[i2].ambulance,xa=A.x+(B.x-A.x)*f,va=A.v+(B.v-A.v)*f,J=F[i].junctions;
+  const cam=xa*S-280,sx=w=>w*S-cam,fl=Math.floor(now/160)%2;
+  ctx.textAlign='left';ctx.fillStyle='#4f7f45';ctx.fillRect(0,0,CW,CH);scenery(cam);
+  ctx.fillStyle='#3b4047';ctx.fillRect(0,CY-RW,CW,2*RW);POS.forEach(p=>ctx.fillRect(sx(p)-RW,0,2*RW,MAPY));
+  // lane markings
+  ctx.fillStyle='#e8c33a';for(let x=-(cam%24)-24;x<CW;x+=24)if(!POS.some(p=>x+12>sx(p)-RW&&x<sx(p)+RW))ctx.fillRect(x,CY-1,12,2);
+  POS.forEach(p=>{const x=sx(p);for(let y=0;y<MAPY;y+=24)if(!(y+12>CY-RW&&y<CY+RW))ctx.fillRect(x-1,y,2,12);});
+  ctx.fillStyle='#d9dde2';ctx.fillRect(0,CY-RW,CW,1.5);ctx.fillRect(0,CY+RW-1.5,CW,1.5);
+  POS.forEach(p=>{const x=sx(p);ctx.fillRect(x-RW,0,1.5,MAPY);ctx.fillRect(x+RW-1.5,0,1.5,MAPY);
+    ctx.fillStyle='#3b4047';ctx.fillRect(x-RW,CY-RW,2*RW,2*RW);ctx.fillStyle='#d9dde2';
+    ctx.fillRect(x-RW-6,CY,3,RW);ctx.fillRect(x-RW,CY-RW-6,RW,3);ctx.fillRect(x+RW+3,CY-RW,3,RW);ctx.fillRect(x,CY+RW+3,RW,3);});          // stop lines
+  // hospital
+  const hx=sx(END);ctx.fillStyle='#f2f3f5';ctx.fillRect(hx+8,CY-RW-86,110,70);ctx.fillStyle='#d83a3a';ctx.fillRect(hx+58,CY-RW-76,10,30);ctx.fillRect(hx+48,CY-RW-66,30,10);
+  ctx.fillStyle='#fff';ctx.font='11px system-ui';ctx.fillText('Hospital',hx+40,CY-RW-92);
+  // green corridor strip + decorative opposite/northbound traffic (not part of the simulation data)
+  POS.forEach((p,j)=>{if(J.engaged[j]){ctx.fillStyle=`rgba(47,208,90,${.14+.07*Math.sin(now/200)})`;ctx.fillRect(sx(p)-RW-6-230,CY,230,RW);}});
+  const ad=playing?dtr:0;
+  if(ad){const sp=cam+CW+80;if(Math.random()<ad*.3&&(!AL.length||AL[AL.length-1].pos<sp-90))AL.push({pos:sp,v:36,col:PAL[Math.random()*7|0]});
+    lane(AL,ad,POS.map((p,j)=>({s:p*S+RW+6,g:aC(J.state[j])==='g'})));AL=AL.filter(c=>c.pos>cam-60);
+    BL.forEach((l,j)=>{if(Math.random()<ad*.12&&(!l.length||l[l.length-1].pos<MAPY-70))l.push({pos:MAPY+10,v:36,col:PAL[Math.random()*7|0]});
+      lane(l,ad,[{s:CY+RW+6,g:bC(J.state[j])==='g'}]);BL[j]=l.filter(c=>c.pos>-30);});}
+  AL.forEach(c=>car(c.pos-cam,CY-RW/2-3.5,CARL,7,c.col));
+  BL.forEach((l,j)=>l.forEach(c=>car(sx(POS[j])+RW/2-3.5,c.pos,7,CARL,c.col)));
+  // queued + departing cars
+  POS.forEach((p,j)=>{const x=sx(p),stopX=x-RW-6,stopY=CY-RW-6,q=Q[j];
+    for(const c of q.A.concat(q.dA))car(stopX-c.p-CARL,CY+RW/2-3.5,CARL,7,c.col);
+    for(const c of q.B.concat(q.dB))car(x-RW/2-3.5,stopY-c.p-CARL,7,CARL,c.col);});
+  if(night){ctx.fillStyle='rgba(6,10,30,.58)';ctx.fillRect(0,0,CW,MAPY);ctx.globalCompositeOperation='lighter';
+    POS.forEach(p=>[[-1,-1],[1,1]].forEach(([a,b])=>{const x=sx(p)+a*(RW+14),y=CY+b*(RW+14),g=ctx.createRadialGradient(x,y,2,x,y,60);g.addColorStop(0,'rgba(255,200,120,.45)');g.addColorStop(1,'rgba(255,200,120,0)');ctx.fillStyle=g;ctx.fillRect(x-60,y-60,120,120)}));
+    ctx.globalCompositeOperation='source-over';}
+  // ambulance with flashing siren
+  const ax=sx(xa),ay=CY+RW/2;
+  const E1=F[i].ambulance2,E2=F[i2].ambulance2||E1,two=!!E1;let ex=0,eon=false;
+  if(two){eon=!!E1.active;ex=E1.x+(E2.x-E1.x)*f;}
+  drawAmb(ax,ay,fl,0);tag(ax,ay-20,'PATIENT','#d83a3a');
+  if(two&&eon){const jx=sx(POS[AJ]),ey=CY-RW-6-(BSTOP-ex)*S-8;       // empty ambulance drives south on road B
+    if(ey>-30&&ey<MAPY+30&&jx>-40&&jx<CW+40){drawAmb(jx-RW/2,ey,fl,Math.PI/2);tag(jx+RW+16,ey,'EMPTY','#6b7280');}}
+  // signal heads + preemption marker
+  POS.forEach((p,j)=>{const x=sx(p);head(x-RW-12,CY+RW+8,aC(J.state[j]),'J'+(j+1)+' A');head(x-RW-18,CY-RW-46,bC(J.state[j]),'B');
+    if(J.engaged[j]){const r=24+4*Math.sin(now/120);ctx.strokeStyle='rgba(255,60,60,.85)';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,CY,r,0,7);ctx.stroke();
+      ctx.fillStyle='#d83a3a';ctx.beginPath();ctx.roundRect(x-34,6,68,18,9);ctx.fill();ctx.fillStyle='#fff';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText('EV PRIORITY',x,19);ctx.textAlign='left';}});
+  // HUD
+  ctx.textAlign='left';const nx=POS.findIndex(p=>p>xa),dm=nx<0?0:POS[nx]-xa,inf=nx<0?'heading to hospital':`J${nx+1} in ${Math.round(dm)} m (ETA ${(dm/Math.max(va,5)).toFixed(0)} s) - ${NAMES[J.state[nx]]}`;
+  const hh=two?46:26;ctx.fillStyle='rgba(0,0,0,.65)';ctx.beginPath();ctx.roundRect(8,MAPY-8-hh,440,hh,6);ctx.fill();ctx.fillStyle='#fff';ctx.font='12px system-ui';
+  ctx.fillText(`Patient: ${Math.round(va*3.6)} km/h  |  ${inf}`,16,MAPY-8-hh+17);
+  if(two){const ev2=E1.v+(E2.v-E1.v)*f;ctx.fillText(`Empty: ${eon?Math.round(ev2*3.6)+' km/h, '+Math.max(0,Math.round(BSTOP-ex))+' m from J'+(AJ+1)+' (road B)':(ex>=BSTOP?'finished':'not started')}`,16,MAPY-8-hh+37);}
+  // mini-map
+  ctx.fillStyle='#1d2125';ctx.fillRect(0,MAPY,CW,CH-MAPY);ctx.fillStyle='#9aa1ab';ctx.font='11px system-ui';ctx.fillText('Full corridor',10,MAPY+14);
+  ctx.fillStyle='#555c66';ctx.fillRect(40,MAPY+30,820,4);
+  POS.forEach((p,j)=>{const x=40+p/END*820,c={g:'#2fd05a',y:'#ffcc00',r:'#ff3b30'}[aC(J.state[j])];
+    ctx.fillStyle=c;ctx.beginPath();ctx.arc(x,MAPY+32,6,0,7);ctx.fill();
+    if(J.engaged[j]){ctx.strokeStyle='#ff3b30';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,MAPY+32,10,0,7);ctx.stroke();}
+    ctx.fillStyle='#9aa1ab';ctx.textAlign='center';ctx.fillText('J'+(j+1),x,MAPY+52);});
+  ctx.fillStyle='#6ea0ff';ctx.beginPath();ctx.arc(40+Math.min(xa,END)/END*820,MAPY+32,5,0,7);ctx.fill();ctx.textAlign='left';
+  if(two&&eon){ctx.fillStyle='#f59e0b';ctx.beginPath();ctx.arc(40+POS[AJ]/END*820,MAPY+32-22*Math.max(0,BSTOP-ex)/BSTOP,4,0,7);ctx.fill();}
+  $('tm').textContent='t = '+tsim.toFixed(1)+' s';drawChart();renderLog();
+}
+function loop(now){const dt=Math.min(0.1,(now-last)/1000);last=now;dtr=dt;
+  if(cur){const F=feeds[cur].frames,T=(F.length-1)*DT;
+    if(playing){tsim+=dt*(+$('sp').value);if(tsim>=T){tsim=T;playing=false;$('play').textContent='Play'}$('sl').value=tsim}
+    const i=Math.min(F.length-1,Math.floor(tsim/DT));
+    if(!Q||Math.abs(i-lastI)>3)sync(i,true);else if(i!==lastI)sync(i,false);
+    lastI=i;step(dt);draw(now);}
+  requestAnimationFrame(loop)}
+requestAnimationFrame(loop);
+
+function drawResults(){const d=RES,P=[];d.metrics.forEach(m=>P.push({t:m.label,n:d.scenarios,m:m.mean,c:m.ci}));
+  if(d.twoAmb)d.twoAmb.metrics.forEach(m=>P.push({t:'2 amb: '+m.label,n:d.twoAmb.scenarios,m:m.mean,c:m.ci}));
+  if(d.volume)d.volume.metrics.forEach(m=>P.push({t:'Volume: '+m.label,n:d.volume.scenarios,m:m.mean,c:m.ci,x:d.volume.scale}));
+  const rc=$('rc'),cols=3,pw=300,ph=175,rows=Math.ceil(P.length/cols),r=devicePixelRatio||1;rc.width=900*r;rc.height=rows*ph*r;
+  const g=rc.getContext('2d');g.setTransform(r,0,0,r,0,0);const cs=getComputedStyle(document.body),tx=cs.getPropertyValue('--tx'),mu=cs.getPropertyValue('--mu'),bd=cs.getPropertyValue('--bd'),colr=['#e0653a','#e0a83a','#2fae5a'];
+  P.forEach((p,i)=>{if(p.x){drawLine(g,p,(i%cols)*pw+30,Math.floor(i/cols)*ph+30,pw-44,ph-78,tx,mu,bd,colr);return;}const x0=(i%cols)*pw+30,y0=Math.floor(i/cols)*ph+30,w=pw-44,h=ph-78,bw=w/p.m.length,hi=Math.max(...p.m.map((v,k)=>(v||0)+(p.c[k]||0)),1e-6)*1.15;
+    g.fillStyle=tx;g.font='bold 12px system-ui';g.textAlign='left';g.fillText(p.t,x0-20,y0-12);
+    g.strokeStyle=bd;g.beginPath();g.moveTo(x0,y0);g.lineTo(x0,y0+h);g.lineTo(x0+w,y0+h);g.stroke();
+    p.m.forEach((v,k)=>{const bh=(v||0)/hi*h,bx=x0+k*bw+bw*.2,cx2=bx+bw*.3,e=(p.c[k]||0)/hi*h;
+      g.fillStyle=colr[k%3];g.fillRect(bx,y0+h-bh,bw*.6,bh);g.strokeStyle=tx;g.beginPath();g.moveTo(cx2,y0+h-bh-e);g.lineTo(cx2,y0+h-bh+e);g.stroke();
+      g.fillStyle=tx;g.font='11px system-ui';g.textAlign='center';g.fillText(v==null?'n/a':v.toFixed(1),cx2,y0+h-bh-e-4);
+      g.fillStyle=mu;p.n[k].split(' ').slice(0,3).forEach((t2,q)=>g.fillText(t2,cx2,y0+h+14+q*11));});});
+  $('resN').textContent='('+d.nRuns+' runs, whiskers = 95% CI)';$('resCard').hidden=false;}
+function drawLine(g,p,x0,y0,w,h,tx,mu,bd,colr){const n=p.x.length,hi=Math.max(...p.m.flatMap((r,i)=>r.map((v,k)=>(v||0)+(p.c[i][k]||0))),1e-6)*1.15;
+  g.fillStyle=tx;g.font='bold 12px system-ui';g.textAlign='left';g.fillText(p.t,x0-20,y0-12);
+  g.strokeStyle=bd;g.lineWidth=1;g.beginPath();g.moveTo(x0,y0);g.lineTo(x0,y0+h);g.lineTo(x0+w,y0+h);g.stroke();
+  const X=i=>x0+10+(w-20)*i/(n-1),Y=v=>y0+h-(v||0)/hi*h;
+  p.n.forEach((nm,k)=>{g.strokeStyle=colr[k];g.fillStyle=colr[k];g.lineWidth=1.8;g.beginPath();p.m.forEach((r,i)=>{i?g.lineTo(X(i),Y(r[k])):g.moveTo(X(i),Y(r[k]))});g.stroke();
+    p.m.forEach((r,i)=>{g.beginPath();g.arc(X(i),Y(r[k]),3,0,7);g.fill();g.beginPath();g.moveTo(X(i),Y(r[k]-(p.c[i][k]||0)));g.lineTo(X(i),Y(r[k]+(p.c[i][k]||0)));g.stroke();});});
+  g.fillStyle=mu;g.font='11px system-ui';g.textAlign='center';p.x.forEach((v,i)=>g.fillText('x'+v,X(i),y0+h+14));
+  g.textAlign='left';let lx=x0-20;p.n.forEach((nm,k)=>{g.fillStyle=colr[k];g.fillText(nm,lx,y0+h+30);lx+=g.measureText(nm).width+14});}
+function opShow(){const a=ops.map(o=>`struct('t',${o.t},'junction',${o.j},'cmd','${o.c}')`).join(', ');
+  $('opo').textContent=ops.length?`opts = struct('range','corridor','twoAmb',true,'operator',[${a}]);\nres = run_simulation(cfg,'evp',7,opts);\nexport_feed(res,'feed_operator.json');   % then load it here`:'No commands yet. Add one to generate the MATLAB code.';}
+$('opa').onclick=()=>{ops.push({t:+$('opt').value,j:+$('opj').value,c:$('opc').value});opShow()};
+$('opx').onclick=()=>{ops=[];opShow()};$('opcp').onclick=()=>{try{navigator.clipboard.writeText($('opo').textContent)}catch(e){}};opShow();
+function metaBox(){$('curn').textContent=cur;const m=feeds[cur].meta,rej=Object.values(m.rejectedMsgs).reduce((a,b)=>a+b,0);
+  const c=[['Ambulance delay',m.ambDelay+' s'],['Ambulance stops',m.ambStops],['Cross-road delay',m.normalDelayB+' s'],['Max queue',m.maxQueue+' veh'],['Accepted msgs',m.acceptedMsgs],['Rejected msgs',rej],['Trigger',m.leadMode||'fixed']];if(m.twoAmb)c.push(['Empty ambulance delay',m.emptyDelay+' s'],['Empty held by priority',(m.heldSecondsEmpty||0).toFixed(1)+' s']);
+  $('meta').innerHTML=c.map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');}
+function table(){let h='<tr><th>Scenario</th><th>Amb. delay (s)</th><th>Stops</th><th>Cross delay (s)</th><th>Max queue</th><th>Rejected</th><th>Empty delay (s)</th></tr>';
+  for(const [n,d] of Object.entries(feeds)){const m=d.meta;h+=`<tr><td>${esc(n)}</td><td>${m.ambDelay}</td><td>${m.ambStops}</td><td>${m.normalDelayB}</td><td>${m.maxQueue}</td><td>${Object.values(m.rejectedMsgs).reduce((a,b)=>a+b,0)}</td><td>${m.emptyDelay??'-'}</td></tr>`}
+  $('cmp').innerHTML=h;}
+function secBox(){if(!sec)return;$('sec').hidden=false;const r=sec.rejectedCounts;
+  const T=[['Replay rejected',r.replay],['Bad signature rejected',r.bad_signature],['Stale rejected',r.stale],['Unregistered rejected',r.unregistered],['Spoofed engagements',sec.spoofedEngagements]];
+  $('sec').innerHTML=`<h2>Security event log</h2><p class="sub">${esc(sec.timestamp)}</p><p>Attack type <b>${esc(sec.attackType)}</b> on junction ${esc(sec.targetJunction)}.</p><div class="kpis">${T.map(([k,v])=>`<div><div class="k">${k}</div><div class="v">${esc(v)}</div></div>`).join('')}</div>`;}
+
+// ---- pages and theme ----
+const TT={overview:['Overview','Key results for the selected run.'],live:['Live corridor','Replay a run: signals, queues and the ambulance on its way to the hospital.'],analysis:['Analysis','Compare scenarios and review Monte Carlo results.'],operator:['Operator console','Build manual override commands for a junction.'],security:['Security log','Messages the junctions rejected during an attack run.']};
+function route(){const h=location.hash.slice(1),p=TT[h]?h:'overview';
+  document.querySelectorAll('.page').forEach(s=>s.hidden=s.id!=='p-'+p);
+  document.querySelectorAll('.nav a').forEach(a=>a.dataset.p===p?a.setAttribute('aria-current','page'):a.removeAttribute('aria-current'));
+  $('ptitle').textContent=TT[p][0];$('psub').textContent=TT[p][1];document.title=TT[p][0]+' | SMART-EVP';scrollTo(0,0);}
+addEventListener('hashchange',route);route();
+function setTheme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('evpTheme',t)}catch(e){}$('th').textContent=t==='dark'?'Light mode':'Dark mode';if(RES)drawResults();}
+setTheme((()=>{try{return localStorage.getItem('evpTheme')}catch(e){}})()||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
+$('th').onclick=()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+
+// ---- comparison against fixed-time, csv, print ----
+function vsBox(){const b=Object.values(feeds).find(d=>d.meta.mode==='fixed');
+  if(!b){$('vs').innerHTML='<tr><td>Load the fixed-time feed to see this comparison.</td></tr>';return}
+  const f=(a,c,u)=>{if(a==null||c==null)return'<td>-</td>';const d=a-c,p=c?+(d/c*100).toFixed(1):0,k=d<0?'gd':d>0?'bad':'';
+    return `<td class="${k}">${d>0?'+':''}${d.toFixed(1)}${u} (${p>0?'+':''}${p}%)</td>`};
+  let h='<tr><th>Scenario</th><th>Ambulance delay</th><th>Ambulance stops</th><th>Cross-road delay</th></tr>';
+  for(const [n,d] of Object.entries(feeds)){if(d===b)continue;const m=d.meta,q=b.meta;
+    h+=`<tr><td>${esc(n)}</td>${f(m.ambDelay,q.ambDelay,' s')}${f(m.ambStops,q.ambStops,'')}${f(m.normalDelayB,q.normalDelayB,' s')}</tr>`}
+  $('vs').innerHTML=h}
+$('csv').onclick=()=>{const rows=[['scenario','amb_delay_s','amb_stops','cross_delay_s','max_queue','rejected','empty_delay_s']];
+  for(const [n,d] of Object.entries(feeds)){const m=d.meta;rows.push([n,m.ambDelay,m.ambStops,m.normalDelayB,m.maxQueue,Object.values(m.rejectedMsgs).reduce((a,b)=>a+b,0),m.emptyDelay??'']);}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));a.download='scenario_comparison.csv';a.click();};
+$('pr').onclick=()=>print();
+</script></body></html>
