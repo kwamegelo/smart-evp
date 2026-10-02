@@ -88,7 +88,7 @@ docs/        GUIDE.md, a complete explanation of the project
 
 ## Author
 
-Angelo Kwame Amoteng, BSc Computer Engineering, KNUST.
+Angelo Kwame Amoateng, BSc Computer Engineering, KNUST.
 [Portfolio](https://kwamegelo.web.app) | [GitHub](https://github.com/kwamegelo)
 
 ## License
