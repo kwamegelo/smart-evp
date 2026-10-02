@@ -1,10 +1,8 @@
-# SMART-EVP: the complete guide
+# SMART-EVP: technical guide
 
-This guide teaches the whole project from zero. Read it top to bottom once, then use the
-file reference and the viva questions at the end as revision material.
-
-A note on honesty: I could not run MATLAB, so I have not seen your numbers. This guide explains
-how the numbers are produced and how to read them. It never states a result you did not measure.
+This document explains how SMART-EVP works: the model, the files, the security design, the
+experiments and the dashboard. It is meant for anyone who wants to read, run or extend the project.
+Headline results are in the main [README](../README.md).
 
 ---
 
@@ -18,7 +16,7 @@ that light, slows it down. In an emergency, those seconds matter.
 **EVP (Emergency Vehicle Preemption)** lets the ambulance tell the traffic light it is coming.
 The light then changes early so the ambulance finds a green light and an empty road.
 
-### What your project adds
+### What the project adds
 1. The ambulance sends **cryptographically signed messages**, so nobody can fake an ambulance
    and take over a junction.
 2. A **corridor** of 3 junctions that are warned early (pre-notification).
@@ -35,7 +33,7 @@ priority flag in a registry, not sensor detection. ESP32, MQTT and e-mail alerts
 
 ---
 
-## 2. Vocabulary you must know
+## 2. Vocabulary
 
 | Term | Meaning |
 |---|---|
@@ -72,7 +70,7 @@ run_simulation.m  (the engine)  <---- sign_message / verify_message / message_pa
         +--> export_feed / export_results   (JSON files)
                          |
                          v
-                  dashboard.html  (you load the JSON files in the browser)
+                  dashboard.html  (JSON files are loaded in the browser)
 ```
 
 The engine is one function. Everything else either feeds it settings, calls it many times, or
@@ -103,7 +101,7 @@ turns its output into tables, plots or JSON.
 | `summary_stats.m` | Returns mean, 95% confidence half-width, standard deviation and count. Uses `tinv` if available, otherwise an approximation. |
 | `run_experiments.m` | A script: 50 Monte Carlo runs of fixed, EVP local and EVP corridor, plus the four attack scenarios. |
 | `run_two_ambulance_experiments.m` | Monte Carlo with a patient and an empty ambulance: fixed vs EVP both prioritised vs EVP patient only. Saves a CSV and a figure. |
-| `run_volume_sweep.m` | Fixed vs EVP fixed trigger vs EVP adaptive at traffic volumes 0.5x, 1x, 1.5x, 1.8x. This is the test of your adaptive-trigger claim. |
+| `run_volume_sweep.m` | Fixed vs EVP fixed trigger vs EVP adaptive at traffic volumes 0.5x, 1x, 1.5x, 1.8x. This is the test of the adaptive-trigger claim. |
 | `export_results.m` | Runs the Monte Carlo, the two-ambulance study and the volume sweep, and writes `results_summary.json` for the dashboard charts. |
 
 ### Verification
@@ -115,7 +113,7 @@ turns its output into tables, plots or JSON.
 | File | What it does |
 |---|---|
 | `main.m` | Quick launcher: fixed, EVP local, EVP corridor on seed 42, prints the delays. |
-| `run_all.m` | The master pipeline. Runs everything and exports every JSON file. This is the file you run. |
+| `run_all.m` | The master pipeline. Runs everything and exports every JSON file. This is the main entry point. |
 | `demo_single_run.m` | Time-space diagram: fixed-time vs EVP corridor. Picks a "typical" seed whose fixed delay is closest to the mean. |
 | `demo_two_ambulances.m` | Time-space diagrams for the patient (road A) and the empty ambulance (road B at junction 2). |
 
@@ -128,7 +126,6 @@ turns its output into tables, plots or JSON.
 ### Documentation and web
 | File | What it does |
 |---|---|
-| `README1.md` | Your project README: run order, claims to test, limitations. |
 | `dashboard.html` | The playback and analysis dashboard (section 10). |
 
 ---
@@ -215,7 +212,7 @@ phase direction), which is what the dashboard replays.
 **Fixed trigger (conventional EVP):** start preempting when `ETA <= leadTime` (20 s). Simple, but
 it can preempt too early and disrupt cross traffic for no benefit.
 
-**Adaptive trigger (just-in-time, your claim #1):** the junction uses its own state.
+**Adaptive trigger (just-in-time):** the junction uses its own state.
 * Road already green: do nothing unless that green would end before the ambulance arrives
   (green time left <= ETA + queue slowdown + 5 s margin).
 * Road not green: start when `ETA <= time to reach green + time to flush the queue + 5 s margin`.
@@ -272,7 +269,7 @@ If one character of the message changed, or the key was wrong, the signatures di
 3. **Fresh?** `|now - timestamp| <= 2 s`. Else `stale`.
 4. **New?** Sequence number must be greater than the last accepted one from that ID **at that junction**. Else `replay`.
 
-### The attacks you test
+### The attacks tested
 | Attack | What the attacker does | Which check stops it |
 |---|---|---|
 | `badsig` | Forges a message signed with a guessed key | signature |
@@ -287,7 +284,7 @@ One fault test turns security **off** and runs the bad-signature attack. It must
 ### Priority cannot be faked
 The junction looks priority up in its **own registry** (`cfg.prio`) by verified ID. A vehicle cannot claim a higher priority in its message.
 
-### What security does not cover (say this in your report)
+### What security does not cover
 Shared symmetric demo keys, no key rotation, no hardware protection, no radio jamming, no
 compromised ambulance unit, no compromised junction controller.
 
@@ -296,7 +293,7 @@ compromised ambulance unit, no compromised junction controller.
 ## 8. Statistics, explained simply
 
 ### Why many runs?
-One run depends on random traffic. One lucky or unlucky seed proves nothing. So you run 50 seeds per
+One run depends on random traffic. One lucky or unlucky seed proves nothing. So the experiments run 50 seeds per
 strategy, which is **Monte Carlo**.
 
 ### Mean and 95% confidence interval
@@ -309,11 +306,11 @@ confidence. The bars on the dashboard charts ("whiskers") are this CI.
 
 ### How to read a comparison
 * **Ranges far apart:** the difference is real.
-* **Ranges overlapping:** you cannot claim a difference from the plot alone. (A paired test on the same seeds would be stronger.)
+* **Ranges overlapping:** a difference cannot be claimed from the plot alone. (A paired test on the same seeds would be stronger.)
 * Always report **both** sides of the trade-off: EVP lowers ambulance delay but raises cross-road delay.
 * Say "in this simulation", never "in the real world".
 
-### The studies in your project
+### The studies in the project
 | Study | Question it answers |
 |---|---|
 | Fixed vs local vs corridor (50 runs) | Does EVP help, and does early notice help more? |
@@ -374,18 +371,9 @@ The top bar has the **Scenario** picker, **Load feeds** and **Print page**.
 On the Live page: **Space** plays or pauses, **left/right arrows** jump 5 s.
 
 ### Important limits
-* It **replays saved runs**. It cannot control a running simulation. The operator console only writes MATLAB code you then run.
+* It **replays saved runs**. It cannot control a running simulation. The operator console only writes MATLAB code that is then run.
 * The oncoming and cross-road cars in the animation are **decorative**. The real data is the ambulance, the signal states and the queue counts.
 * The security page only shows the one attack exported by `run_all` (replay).
-
-### What we changed in the dashboard
-1. Rebuilt it as a five-page layout with a sidebar, keeping all your original simulation and drawing code.
-2. Made the style semi-minimal: quiet borders, plain ink buttons, colour only for signal states.
-3. Set dark mode backgrounds to pure black.
-4. Added a **fixed-time comparison table** on Overview: change in ambulance delay, stops and cross-road delay, with signs and percentages (minus is better, plus is a cost).
-5. Added **Download CSV** on Analysis and **Print page** in the top bar.
-
-I only syntax-checked the dashboard. Test it with your real files and tell me anything that looks wrong.
 
 ### JSON feed structure (for reference)
 ```
@@ -418,15 +406,30 @@ res = run_simulation(cfg,'evp',7,opts);
 export_feed(res,'feed_operator.json');
 ```
 
-### Things to check on your first full run
-* `struct2array` (used in `run_all.m` and `run_experiments.m`) may need a toolbox, as far as I know.
+### Troubleshooting
+* `struct2array` (used in `run_all.m` and `run_experiments.m`) may require a toolbox on some installs.
   If it errors, replace `sum(struct2array(x))` with `sum(cell2mat(struct2cell(x)))`.
-* Delete `export_dashboard_data.m`.
-* Update the README to say 18 fault scenarios, not 16.
 
 ---
 
-## 12. Limitations to state in your report
+## 11b. Results (50 Monte Carlo runs, mean +/- 95% CI, simulation only)
+
+| Metric | Fixed-time | EVP local | EVP corridor |
+|---|---|---|---|
+| Ambulance delay (s) | 28.1 +/- 6.5 | 3.1 +/- 0.9 | 1.8 +/- 0.7 |
+| Ambulance stops | 1.1 +/- 0.3 | 0 | 0 |
+| Cross-road delay (s) | 19.6 +/- 0.8 | 22.2 +/- 0.8 | 22.5 +/- 0.8 |
+| Main-road delay (s) | 14.7 +/- 0.5 | 13.7 +/- 0.5 | 13.4 +/- 0.4 |
+| Max queue (veh) | 9.3 +/- 0.4 | 9.8 +/- 0.5 | 9.8 +/- 0.5 |
+
+* EVP removes most of the ambulance delay and all stops. The cost is about 2.6 to 2.9 s more delay per vehicle on the cross road, and that increase is clear because the intervals do not overlap.
+* Local and corridor ranges overlap slightly, so these plots alone do not show that corridor is better than local.
+* Two ambulances: patient delay falls from 26.7 +/- 9.2 s to 1.9 +/- 1.0 s. Giving the empty ambulance priority holds it for 21.3 s on average.
+* Security: a replay attack run produced 19 rejected messages and 0 spoofed engagements.
+
+---
+
+## 12. Limitations
 
 * Simplified traffic: two-phase signals, random (Bernoulli) arrivals, one lane per approach, a fixed "bypass factor" for queues.
 * Not calibrated with real traffic data, and not compared with SUMO or field data.
@@ -439,7 +442,7 @@ export_feed(res,'feed_operator.json');
 
 ---
 
-## 13. Viva questions with answers
+## 13. Design FAQ
 
 **Why does the same seed matter?**
 It makes traffic identical across strategies, so the comparison is paired and fair.
@@ -468,8 +471,8 @@ Arbitration picks one road at a time, with yellow and all-red between switches. 
 **What is the downside of EVP?**
 Cross traffic waits longer. That is why both ambulance delay and cross-road delay are reported, and why recovery logic exists.
 
-**What makes your trigger better than conventional EVP?**
-Claim to test, not assume: starting just in time should give similar ambulance delay with less cross-road disruption. The volume sweep shows whether the confidence intervals support it.
+**What makes the adaptive trigger different from conventional EVP?**
+The hypothesis is that starting just in time gives similar ambulance delay with less cross-road disruption. The volume sweep (`run_volume_sweep`) is the test, and the confidence intervals decide whether it holds.
 
 **Does it detect a patient?**
 No. It uses a simulated priority registry (`cfg.prio`). Real detection would need hardware, which is out of scope.
